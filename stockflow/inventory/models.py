@@ -3,6 +3,11 @@ from supplier.models import Supplier
 
 
 class Item(models.Model):
+    """The models repr items in the inventory
+        Each item relates to the supplier through
+        a many2many relationship
+    
+    """
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -17,10 +22,17 @@ class Item(models.Model):
 
 
 class SupplierItem(models.Model):
-    item = models.ForeignKey('Item', on_delete=models.CASCADE, related_name='supplier_items')
+    """The models allows us to connect the inventory
+        to suppliers. When Items are add to db, this model
+        is automatically populated
+    
+    """
+    item = models.ForeignKey(
+        "Item", on_delete=models.CASCADE, related_name="supplier_items"
+    )
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=0)
     supply_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('item', 'supplier')
+        unique_together = ("item", "supplier")
