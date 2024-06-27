@@ -44,38 +44,18 @@ class ItemSerializer(serializers.ModelSerializer):
             "suppliers",
             "supplier_data",
         ]
-
     def create(self, validated_data):
-        # We use pop here to detach ther supplier_data from the
-        # validated_data since it is not required to create item
         supplier_data = validated_data.pop("supplier_data", [])
         item = super().create(validated_data)
-        total_quantity = 0
-        for supplier_data in supplier_data:
-            supplier_id = supplier_data.get("supplier_id")
-            quantity = supplier_data.get("quantity")
-
-            # After creating the record of each item, we bind the item
-            # to the suppliers and also specify their quantity
-            # With, we can keep track of suppliers vs item relationship
-            SupplierItem.objects.create(
-                item=item, supplier_id=supplier_id, quantity=quantity
-            )
-            total_quantity += quantity
-
-        """The total quantity of each item should ideally be equal to the quantity
-            supply the by suppliers. This will allow us to automatically calculate 
-            from the suppliers data. See the supplierItem model for the quantity
-        """
-        item.quantity = total_quantity
-        item.save()
+        self._create_supplier_items(item, supplier_data)
         return item
 
     def update(self, instance, validated_data):
         supplier_data = validated_data.get("supplier_data", None)
 
         if supplier_data is not None:
-            # Check if all supplier IDs exist
+
+            # This allow me to verify the suppliers id
             supplier_ids = [data["supplier_id"] for data in supplier_data]
             existing_suppliers = Supplier.objects.filter(id__in=supplier_ids)
             existing_supplier_ids = set(existing_suppliers.values_list("id", flat=True))
@@ -115,3 +95,15 @@ class ItemSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+    def _create_supplier_items(self, item, supplier_data):
+        """This method bind each item to each supplier and add
+            their quantities per supplier
+        """
+        supplier_items = [
+            SupplierItem(item=item, supplier_id=data["supplier_id"], quantity=data["quantity"])
+            for data in supplier_data
+        ]
+        SupplierItem.objects.bulk_create(supplier_items)
+
+    
