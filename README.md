@@ -3,7 +3,7 @@
 This project provides a REST API for managing an online store's inventory and suppliers. The system is built using Django and Django REST framework and consists of two main apps: `inventory` and `supplier`.
 
 After spinning up this projrct on your server, you will be able to find the documentation page at 
-`/doc/` and the swagger page at `/swagger/`
+`doc/`
 
 ## Table of Contents
 
