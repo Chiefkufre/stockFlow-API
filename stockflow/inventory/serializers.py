@@ -2,6 +2,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import response
 from rest_framework import serializers
 from .models import Item, SupplierItem
+from .models import Product, ImageUrl
 from supplier.models import Supplier
 
 
@@ -107,3 +108,21 @@ class ItemSerializer(serializers.ModelSerializer):
         SupplierItem.objects.bulk_create(supplier_items)
 
     
+
+class ImageUrlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImageUrl
+        fields = ['thumbnail', 'mobile', 'tablet', 'desktop']
+
+class ProductSerializer(serializers.ModelSerializer):
+    imgUrl = ImageUrlSerializer()
+
+    class Meta:
+        model = Product
+        fields = ['name', 'category', 'price', 'imgUrl']
+
+    def create(self, validated_data):
+        img_url_data = validated_data.pop('imgUrl')
+        img_url = ImageUrl.objects.create(**img_url_data)
+        product = Product.objects.create(imgUrl=img_url, **validated_data)
+        return product
