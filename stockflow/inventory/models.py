@@ -36,3 +36,19 @@ class SupplierItem(models.Model):
 
     class Meta:
         unique_together = ("item", "supplier")
+
+
+class ImageUrl(models.Model):
+    thumbnail = models.TextField()
+    mobile = models.TextField()
+    tablet = models.TextField()
+    desktop = models.TextField()
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    category = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    imgUrl = models.ForeignKey(ImageUrl, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
